@@ -24,7 +24,7 @@ public class UserRepositoryTest {
     public void givenNewUser_whenSave_thenSuccess() {
         UserEntity userEntity = UserEntity.builder().name("name").email("email@mail.com").build();
         UserEntity insertedUserEntity = userRepository.save(userEntity);
-        assertThat(entityManager.find(UserEntity.class, insertedUserEntity.getId()) ).isEqualTo(userEntity);
+        assertThat(entityManager.find(UserEntity.class, insertedUserEntity.getId())).isEqualTo(userEntity);
     }
 
     @Test
