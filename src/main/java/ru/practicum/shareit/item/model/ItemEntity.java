@@ -28,7 +28,7 @@ public class ItemEntity {
     private String description;
 
     private Boolean available;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity userEntity;

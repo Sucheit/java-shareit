@@ -77,7 +77,7 @@ public class ItemService {
         if (optionalUserEntity.isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id='%s' не найден", userId));
         }
-        return itemRepository.findByUserEntity(optionalUserEntity.get()).stream()
+        return itemRepository.findByUserEntityId(userId).stream()
                 .map(ItemMapper::mapItemEntityToItemDto)
                 .collect(Collectors.toList());
     }

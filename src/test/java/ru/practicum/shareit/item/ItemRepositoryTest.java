@@ -66,7 +66,7 @@ public class ItemRepositoryTest {
         ItemEntity item = ItemEntity.builder().name("name").description("desc").userEntity(user).build();
         entityManager.persist(user);
         entityManager.persist(item);
-        List<ItemEntity> items = itemRepository.findByUserEntity(user);
+        List<ItemEntity> items = itemRepository.findByUserEntityId(user.getId());
         assertNotNull(items);
         assertEquals(1, items.size());
         assertEquals(item, items.get(0));

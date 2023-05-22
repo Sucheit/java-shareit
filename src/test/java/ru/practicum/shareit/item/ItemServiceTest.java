@@ -49,7 +49,7 @@ public class ItemServiceTest {
         when(userRepository.findById(Mockito.anyLong())).thenReturn(user);
         List<ItemEntity> items = List.of(ItemEntity.builder().id(3L).name("name1").build(),
                 ItemEntity.builder().id(5L).name("name2").build());
-        when(itemRepository.findByUserEntity(user.get())).thenReturn(items);
+        when(itemRepository.findByUserEntityId(user.get().getId())).thenReturn(items);
         List<ItemDto> retrievedItems = itemService.findAllByUserId(1L);
         assertNotNull(retrievedItems);
         assertEquals(2, retrievedItems.size());
