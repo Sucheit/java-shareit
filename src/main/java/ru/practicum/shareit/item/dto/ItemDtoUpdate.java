@@ -6,26 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.UserEntity;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemDto {
+public class ItemDtoUpdate {
 
     private Long id;
 
-    @NotNull
-    @NotBlank
     private String name;
 
-    @NotNull
-    @NotBlank
     private String description;
 
-    @NotNull
     private Boolean available;
 
     private UserEntity userEntity;
