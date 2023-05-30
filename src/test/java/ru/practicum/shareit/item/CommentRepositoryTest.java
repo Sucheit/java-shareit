@@ -34,10 +34,10 @@ public class CommentRepositoryTest {
     @Test
     public void givenComments_findByItemEntityId_thenSuccess() {
         UserEntity user = UserEntity.builder().name("username").email("username@mail.com").build();
-        ItemEntity item = ItemEntity.builder().name("name").description("desc").build();
+        ItemEntity item = ItemEntity.builder().name("name").description("desc").userEntity(user).build();
         CommentEntity commentEntity = CommentEntity.builder().itemEntity(item).text("text").userEntity(user).build();
         entityManager.persist(commentEntity);
-        List<CommentEntity> commentEntities = commentRepository.findByItemEntityId(1L);
+        List<CommentEntity> commentEntities = commentRepository.findByItemEntityId(item.getId());
         assertNotNull(commentEntities);
         assertEquals(1, commentEntities.size());
         assertEquals(commentEntity, commentEntities.get(0));
