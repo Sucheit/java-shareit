@@ -7,8 +7,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.item.model.ItemEntity;
-import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.UserEntity;
 
 import java.time.LocalDateTime;
