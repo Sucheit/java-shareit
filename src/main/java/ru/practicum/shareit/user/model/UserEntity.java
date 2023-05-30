@@ -22,5 +22,6 @@ public class UserEntity {
 
     private String name;
 
+    @Column(unique = true)
     private String email;
 }

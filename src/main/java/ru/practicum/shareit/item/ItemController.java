@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoUpdate;
 
@@ -33,8 +34,9 @@ public class ItemController {
     }
 
     @GetMapping(value = "/{itemId}")
-    public ItemDto getItemById(@PathVariable Long itemId) {
-        ItemDto itemDto = itemService.getItemById(itemId);
+    public ItemDto getItemById(@RequestHeader(value = "X-Sharer-User-Id", required = false) Long userId,
+                               @PathVariable Long itemId) {
+        ItemDto itemDto = itemService.getItemById(itemId, userId);
         log.info("Получили Item: {}", itemDto);
         return itemDto;
     }
@@ -51,5 +53,14 @@ public class ItemController {
         List<ItemDto> items = itemService.findByNameOrDescription(text);
         log.info("Получили список size()={} по фильтру: {}", items.size(), text);
         return items;
+    }
+
+    @PostMapping(value = "/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                 @PathVariable Long itemId,
+                                 @Valid @RequestBody CommentDto commentDto) {
+        CommentDto addedComment = itemService.addComment(userId, itemId, commentDto);
+        log.info("Пользователь id={} добавил комментарий вещи id={}: {}", userId, itemId, addedComment);
+        return addedComment;
     }
 }

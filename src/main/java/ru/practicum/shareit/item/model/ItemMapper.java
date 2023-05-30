@@ -1,5 +1,8 @@
 package ru.practicum.shareit.item.model;
 
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemBooking;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoUpdate;
 
@@ -32,6 +35,22 @@ public class ItemMapper {
                 .description(itemEntity.getDescription())
                 .available(itemEntity.getAvailable())
                 .userEntity(itemEntity.getUserEntity())
+                .build();
+    }
+
+    public static CommentDto mapCommentEntityToCommentDto(CommentEntity commentEntity) {
+        return CommentDto.builder()
+                .id(commentEntity.getId())
+                .text(commentEntity.getText())
+                .authorName(commentEntity.getUserEntity().getName())
+                .created(commentEntity.getCreated())
+                .build();
+    }
+
+    public static ItemBooking mapBookingDtoToItemBooking(BookingDto bookingDto) {
+        return ItemBooking.builder()
+                .id(bookingDto.getId())
+                .bookerId(bookingDto.getBooker().getId())
                 .build();
     }
 }

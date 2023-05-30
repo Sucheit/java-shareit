@@ -31,10 +31,6 @@ public class UserService {
     }
 
     public UserDto addUser(UserDto userDto) {
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new AlreadyExistsException(
-                    String.format("Пользователь с email: '%s' уже существует", userDto.getEmail()));
-        }
         UserEntity userEntity = mapUserDtoToUserEntity(userDto);
         return mapUserEntityToUserDto(userRepository.save(userEntity));
     }
