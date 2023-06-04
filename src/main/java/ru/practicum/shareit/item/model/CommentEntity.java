@@ -9,30 +9,34 @@ import org.hibernate.annotations.OnDeleteAction;
 import ru.practicum.shareit.user.model.UserEntity;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "items")
-public class ItemEntity {
+@Table(name = "comments")
+public class CommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_id")
+    @Column(name = "comment_id")
     private Long id;
 
     @Column
-    private String name;
+    private String text;
 
-    @Column
-    private String description;
-
-    @Column
-    private Boolean available;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity userEntity;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "item_id", referencedColumnName = "item_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ItemEntity itemEntity;
+
+    @Column
+    private LocalDateTime created;
 }

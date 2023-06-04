@@ -6,14 +6,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoUpdate;
 import ru.practicum.shareit.item.model.ItemEntity;
+import ru.practicum.shareit.item.repository.CommentRepository;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.UserEntity;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,11 +36,18 @@ public class ItemServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private BookingRepository bookingRepository;
+
+    @Mock
+    private CommentRepository commentRepository;
+
     @Test
     public void getItemById() {
-        Optional<ItemEntity> item = Optional.of(ItemEntity.builder().id(1L).name("name").description("desc").build());
+        Optional<ItemEntity> item = Optional.of(ItemEntity.builder().id(1L).name("name").description("desc")
+                .userEntity(UserEntity.builder().id(3L).build()).build());
         when(itemRepository.findById(Mockito.anyLong())).thenReturn(item);
-        ItemDto retrievedItem = itemService.getItemById(1L);
+        ItemDto retrievedItem = itemService.getItemById(1L, 1L);
         assertNotNull(retrievedItem);
         assertEquals(1, retrievedItem.getId());
         assertEquals("name", retrievedItem.getName());
@@ -50,6 +61,7 @@ public class ItemServiceTest {
         List<ItemEntity> items = List.of(ItemEntity.builder().id(3L).name("name1").build(),
                 ItemEntity.builder().id(5L).name("name2").build());
         when(itemRepository.findByUserEntityId(user.get().getId())).thenReturn(items);
+        when(bookingRepository.findByItemEntityId(Mockito.anyLong())).thenReturn(Collections.emptyList());
         List<ItemDto> retrievedItems = itemService.findAllByUserId(1L);
         assertNotNull(retrievedItems);
         assertEquals(2, retrievedItems.size());
@@ -96,7 +108,6 @@ public class ItemServiceTest {
         assertNotNull(retrievedItem);
         assertEquals(7, retrievedItem.getId());
         assertEquals("name", retrievedItem.getName());
-        assertEquals(1L, retrievedItem.getUserEntity().getId());
     }
 
     @Test

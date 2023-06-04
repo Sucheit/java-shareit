@@ -131,28 +131,30 @@ public class ItemControllerTest {
     public void getItemById_whenInvokedWithValidItemId_thenExpectOk() {
         ItemDto item = ItemDto.builder().id(3L).name("name")
                 .description("desc").available(Boolean.TRUE).build();
-        when(itemService.getItemById(Mockito.anyLong())).thenReturn(item);
+        when(itemService.getItemById(Mockito.anyLong(), Mockito.anyLong())).thenReturn(item);
         String response = mockMvc.perform(get("/items/3")
+                        .header("X-Sharer-User-Id", 1L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(itemService, atLeast(1)).getItemById(Mockito.anyLong());
+        verify(itemService, atLeast(1)).getItemById(Mockito.anyLong(), Mockito.anyLong());
         assertEquals(response, objectMapper.writeValueAsString(item));
     }
 
     @Test
     @SneakyThrows
     public void getItemById_whenInvokedWithInvalidItemId_thenExpectNotFound() {
-        when(itemService.getItemById(Mockito.anyLong())).thenThrow(NotFoundException.class);
+        when(itemService.getItemById(Mockito.anyLong(), Mockito.anyLong())).thenThrow(NotFoundException.class);
         mockMvc.perform(get("/items/3")
+                        .header("X-Sharer-User-Id", 1L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(itemService, atLeast(1)).getItemById(Mockito.anyLong());
+        verify(itemService, atLeast(1)).getItemById(Mockito.anyLong(), Mockito.anyLong());
     }
 
     @Test

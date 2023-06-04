@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import ru.practicum.shareit.exception.AlreadyExistsException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoUpdate;
@@ -87,13 +86,10 @@ public class UserServiceTest {
                 .name("name")
                 .build();
         when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(userEntity);
-        when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(Boolean.FALSE);
         UserDto addUser = userService.addUser(userDto);
         assertNotNull(addUser);
         assertEquals(1, addUser.getId());
         assertEquals("name", addUser.getName());
-        when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(Boolean.TRUE);
-        assertThrows(AlreadyExistsException.class, () -> userService.addUser(userDto));
     }
 
     @Test

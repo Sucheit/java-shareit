@@ -6,16 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class ItemDtoUpdate {
+public class ItemBooking {
 
     private Long id;
 
-    private String name;
-
-    private String description;
-
-    private Boolean available;
+    private Long bookerId;
 }
