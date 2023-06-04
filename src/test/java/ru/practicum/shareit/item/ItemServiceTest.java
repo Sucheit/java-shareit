@@ -108,7 +108,6 @@ public class ItemServiceTest {
         assertNotNull(retrievedItem);
         assertEquals(7, retrievedItem.getId());
         assertEquals("name", retrievedItem.getName());
-        assertEquals(1L, retrievedItem.getUserEntity().getId());
     }
 
     @Test

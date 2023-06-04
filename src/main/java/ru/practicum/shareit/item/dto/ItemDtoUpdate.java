@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.user.model.UserEntity;
 
 @Data
 @NoArgsConstructor
@@ -19,6 +18,4 @@ public class ItemDtoUpdate {
     private String description;
 
     private Boolean available;
-
-    private UserEntity userEntity;
 }

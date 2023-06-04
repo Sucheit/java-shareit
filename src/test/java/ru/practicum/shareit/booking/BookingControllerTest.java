@@ -74,28 +74,28 @@ public class BookingControllerTest {
     public void updateBooking_whenInvokedWithValidBooking_thenExpectOk() {
         BookingDto retrievedBooking = BookingDto.builder().id(1L).status(Status.APPROVED)
                 .start(LocalDateTime.now().plusHours(1)).end(LocalDateTime.now().plusHours(2)).build();
-        when(bookingService.updateBooking(1L, "true", 1L)).thenReturn(retrievedBooking);
+        when(bookingService.updateBooking(1L, true, 1L)).thenReturn(retrievedBooking);
         String response = mockMvc.perform(patch("/bookings/1?approved=true")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(bookingService, atLeast(1)).updateBooking(1L, "true", 1L);
+        verify(bookingService, atLeast(1)).updateBooking(1L, true, 1L);
         assertEquals(response, objectMapper.writeValueAsString(retrievedBooking));
     }
 
     @Test
     @SneakyThrows
     public void updateBooking_whenInvokedWithInvalidId_thenExpectNotFound() {
-        when(bookingService.updateBooking(1L, "true", 1L)).thenThrow(NotFoundException.class);
+        when(bookingService.updateBooking(1L, true, 1L)).thenThrow(NotFoundException.class);
         mockMvc.perform(patch("/bookings/1?approved=true")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(bookingService, atLeast(1)).updateBooking(1L, "true", 1L);
+        verify(bookingService, atLeast(1)).updateBooking(1L, true, 1L);
     }
 
     @Test

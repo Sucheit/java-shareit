@@ -47,8 +47,8 @@ public class ItemService {
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден", userId)));
-        itemDto.setUserEntity(userEntity);
         ItemEntity itemEntity = mapItemDtoToItemEntity(itemDto);
+        itemEntity.setUserEntity(userEntity);
         return mapItemEntityToItemDto(itemRepository.save(itemEntity));
     }
 
@@ -76,7 +76,7 @@ public class ItemService {
         return mapItemEntityToItemDto(itemRepository.save(itemToUpdate));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ItemDto getItemById(Long itemId, Long userId) {
         ItemEntity itemEntity = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format("Вещь id=%s не найдена", itemId)));
@@ -112,7 +112,7 @@ public class ItemService {
                 .ifPresent(bookingDto -> itemDto.setNextBooking(mapBookingDtoToItemBooking(bookingDto)));
     };
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<ItemDto> findAllByUserId(Long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден", userId));
@@ -125,7 +125,7 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<ItemDto> findByNameOrDescription(String text) {
         if (text.isEmpty()) {
             return Collections.emptyList();

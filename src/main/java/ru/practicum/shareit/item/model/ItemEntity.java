@@ -23,10 +23,13 @@ public class ItemEntity {
     @Column(name = "item_id")
     private Long id;
 
+    @Column
     private String name;
 
+    @Column
     private String description;
 
+    @Column
     private Boolean available;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")

@@ -28,10 +28,11 @@ public class BookingRepositoryTest {
 
     @Test
     public void givenNewBooking_whenSave_thenSuccess() {
-        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc").build();
-        UserEntity userEntity = UserEntity.builder().name("username").email("username@mail.ru").build();
-        entityManager.persist(itemEntity);
+        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
         entityManager.persist(userEntity);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(userEntity).build();
+        entityManager.persist(itemEntity);
         BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
                 .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
                 .itemEntity(itemEntity).userEntity(userEntity).build();
@@ -41,18 +42,31 @@ public class BookingRepositoryTest {
 
     @Test
     public void givenBookingCreated_whenUpdate_thenSuccess() {
+        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(userEntity);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(userEntity).build();
+        entityManager.persist(itemEntity);
         BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2)).build();
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(userEntity).build();
         entityManager.persist(bookingEntity);
         bookingEntity.setStatus(Status.APPROVED);
         bookingRepository.save(bookingEntity);
-        assertThat(entityManager.find(BookingEntity.class, bookingEntity.getId()).getStatus()).isEqualTo(Status.APPROVED);
+        assertThat(entityManager.find(BookingEntity.class, bookingEntity.getId()).getStatus())
+                .isEqualTo(Status.APPROVED);
     }
 
     @Test
     public void givenBookingCreated_whenFindById_thenSuccess() {
+        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(userEntity);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(userEntity).build();
+        entityManager.persist(itemEntity);
         BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2)).build();
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(userEntity).build();
         entityManager.persist(bookingEntity);
         Optional<BookingEntity> retrievedBooking = bookingRepository.findById(bookingEntity.getId());
         assertThat(retrievedBooking).contains(bookingEntity);
@@ -60,11 +74,14 @@ public class BookingRepositoryTest {
 
     @Test
     public void givenBookingCreated_whenDelete_thenSuccess() {
-        BookingEntity bookingEntity = BookingEntity.builder()
-                .status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1))
-                .endTime(LocalDateTime.now().plusHours(2))
-                .build();
+        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(userEntity);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(userEntity).build();
+        entityManager.persist(itemEntity);
+        BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(userEntity).build();
         entityManager.persist(bookingEntity);
         bookingRepository.delete(bookingEntity);
         assertThat(entityManager.find(BookingEntity.class, bookingEntity.getId())).isNull();
@@ -72,87 +89,82 @@ public class BookingRepositoryTest {
 
     @Test
     public void givenBookingCreated_whenFindByUserEntityId_thenSuccess() {
-        ItemEntity item = ItemEntity.builder().name("name").description("desc").build();
-        UserEntity user = UserEntity.builder().name("username").email("username@mail.ru").build();
-        BookingEntity booking = BookingEntity.builder()
-                .status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1))
-                .endTime(LocalDateTime.now().plusHours(2))
-                .itemEntity(item)
-                .userEntity(user)
-                .build();
-        entityManager.persist(item);
-        entityManager.persist(user);
-        entityManager.persist(booking);
-        List<BookingEntity> bookings = bookingRepository.findByUserEntityId(user.getId());
+        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(userEntity);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(userEntity).build();
+        entityManager.persist(itemEntity);
+        BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(userEntity).build();
+        entityManager.persist(bookingEntity);
+        List<BookingEntity> bookings = bookingRepository.findByUserEntityId(userEntity.getId());
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
-        assertEquals(booking, bookings.get(0));
+        assertEquals(bookingEntity, bookings.get(0));
     }
 
     @Test
     public void givenBookingCreated_whenFindByItemEntityUserEntityId_thenSuccess() {
-        UserEntity owner = UserEntity.builder().name("owner").email("owner@mail.ru").build();
-        ItemEntity item = ItemEntity.builder().name("name").description("desc").userEntity(owner).build();
-        UserEntity booker = UserEntity.builder().name("booker").email("booker@mail.ru").build();
-        BookingEntity booking = BookingEntity.builder()
-                .status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1))
-                .endTime(LocalDateTime.now().plusHours(2))
-                .itemEntity(item)
-                .userEntity(booker)
-                .build();
+        UserEntity owner = UserEntity.builder().name("owner").email("owner@mail.com").build();
         entityManager.persist(owner);
-        entityManager.persist(item);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(owner).build();
+        entityManager.persist(itemEntity);
+        UserEntity booker = UserEntity.builder().name("booker").email("booker@mail.com").build();
         entityManager.persist(booker);
-        entityManager.persist(booking);
+        BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(booker).build();
+        entityManager.persist(bookingEntity);
         List<BookingEntity> bookings = bookingRepository.findByItemEntityUserEntityId(owner.getId());
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
-        assertEquals(booking, bookings.get(0));
+        assertEquals(bookingEntity, bookings.get(0));
+        assertEquals(itemEntity, bookings.get(0).getItemEntity());
+        assertEquals(owner, bookings.get(0).getItemEntity().getUserEntity());
     }
 
     @Test
     public void givenBookingCreated_whenFindByItemEntityId_thenSuccess() {
-        UserEntity owner = UserEntity.builder().name("owner").email("owner@mail.ru").build();
-        ItemEntity item = ItemEntity.builder().name("name").description("desc").userEntity(owner).build();
-        UserEntity booker = UserEntity.builder().name("booker").email("booker@mail.ru").build();
-        BookingEntity booking = BookingEntity.builder()
-                .status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1))
-                .endTime(LocalDateTime.now().plusHours(2))
-                .itemEntity(item)
-                .userEntity(booker)
-                .build();
+        UserEntity owner = UserEntity.builder().name("owner").email("owner@mail.com").build();
         entityManager.persist(owner);
-        entityManager.persist(item);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(owner).build();
+        entityManager.persist(itemEntity);
+        UserEntity booker = UserEntity.builder().name("booker").email("booker@mail.com").build();
         entityManager.persist(booker);
-        entityManager.persist(booking);
-        List<BookingEntity> bookings = bookingRepository.findByItemEntityId(item.getId());
+        BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(booker).build();
+        entityManager.persist(bookingEntity);
+        List<BookingEntity> bookings = bookingRepository.findByItemEntityId(itemEntity.getId());
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
-        assertEquals(booking, bookings.get(0));
+        assertEquals(bookingEntity, bookings.get(0));
+        assertEquals(itemEntity, bookings.get(0).getItemEntity());
+        assertEquals(owner, bookings.get(0).getItemEntity().getUserEntity());
     }
 
     @Test
     public void givenBookingCreated_whenFindByItemEntityIdAndUserEntityId_thenSuccess() {
-        UserEntity owner = UserEntity.builder().name("owner").email("owner@mail.ru").build();
-        ItemEntity item = ItemEntity.builder().name("name").description("desc").userEntity(owner).build();
-        UserEntity booker = UserEntity.builder().name("booker").email("booker@mail.ru").build();
-        BookingEntity booking = BookingEntity.builder()
-                .status(Status.WAITING)
-                .startTime(LocalDateTime.now().plusHours(1))
-                .endTime(LocalDateTime.now().plusHours(2))
-                .itemEntity(item)
-                .userEntity(booker)
-                .build();
+        UserEntity owner = UserEntity.builder().name("owner").email("owner@mail.com").build();
         entityManager.persist(owner);
-        entityManager.persist(item);
+        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
+                .available(Boolean.TRUE).userEntity(owner).build();
+        entityManager.persist(itemEntity);
+        UserEntity booker = UserEntity.builder().name("booker").email("booker@mail.com").build();
         entityManager.persist(booker);
-        entityManager.persist(booking);
-        List<BookingEntity> bookings = bookingRepository.findByItemEntityIdAndUserEntityId(item.getId(), booker.getId());
+        BookingEntity bookingEntity = BookingEntity.builder().status(Status.WAITING)
+                .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
+                .itemEntity(itemEntity).userEntity(booker).build();
+        entityManager.persist(bookingEntity);
+        List<BookingEntity> bookings = bookingRepository
+                .findByItemEntityIdAndUserEntityId(itemEntity.getId(), booker.getId());
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
-        assertEquals(booking, bookings.get(0));
+        assertEquals(bookingEntity, bookings.get(0));
+        assertEquals(itemEntity, bookings.get(0).getItemEntity());
+        assertEquals(owner, bookings.get(0).getItemEntity().getUserEntity());
     }
 }

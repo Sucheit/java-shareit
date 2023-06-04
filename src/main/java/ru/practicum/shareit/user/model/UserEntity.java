@@ -20,6 +20,7 @@ public class UserEntity {
     @Column(name = "user_id")
     private Long id;
 
+    @Column(unique = true)
     private String name;
 
     @Column(unique = true)

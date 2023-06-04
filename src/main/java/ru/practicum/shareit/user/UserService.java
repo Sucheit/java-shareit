@@ -22,7 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDto getUserById(Long id) {
         UserEntity userEntity = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id='%s' не найден", id)));
@@ -55,7 +55,7 @@ public class UserService {
         return mapUserEntityToUserDto(userRepository.save(userToUpdate));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
         return userRepository.findAll().stream()
                 .map(UserMapper::mapUserEntityToUserDto)

@@ -1,9 +1,12 @@
 package ru.practicum.shareit.booking.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.item.model.ItemEntity;
-import ru.practicum.shareit.user.model.UserEntity;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
@@ -20,7 +23,7 @@ public class BookingDto {
     @NotNull
     private Long itemId;
 
-    private ItemEntity item;
+    private ItemDto item;
 
     @Future
     @NotNull
@@ -32,6 +35,6 @@ public class BookingDto {
 
     private Status status;
 
-    private UserEntity booker;
+    private UserDto booker;
 
 }

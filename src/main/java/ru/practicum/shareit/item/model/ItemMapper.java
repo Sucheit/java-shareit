@@ -14,7 +14,6 @@ public class ItemMapper {
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
-                .userEntity(itemDto.getUserEntity())
                 .build();
     }
 
@@ -24,7 +23,6 @@ public class ItemMapper {
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
-                .userEntity(itemDto.getUserEntity())
                 .build();
     }
 
@@ -34,7 +32,6 @@ public class ItemMapper {
                 .name(itemEntity.getName())
                 .description(itemEntity.getDescription())
                 .available(itemEntity.getAvailable())
-                .userEntity(itemEntity.getUserEntity())
                 .build();
     }
 

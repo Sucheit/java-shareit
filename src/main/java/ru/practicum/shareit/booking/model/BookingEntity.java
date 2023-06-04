@@ -30,11 +30,14 @@ public class BookingEntity implements Comparable<BookingEntity> {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private ItemEntity itemEntity;
 
+    @Column
     private LocalDateTime startTime;
 
+    @Column
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
+    @Column
     private Status status;
 
     @ManyToOne(cascade = CascadeType.ALL)

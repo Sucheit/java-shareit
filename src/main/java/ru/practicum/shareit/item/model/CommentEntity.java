@@ -24,6 +24,7 @@ public class CommentEntity {
     @Column(name = "comment_id")
     private Long id;
 
+    @Column
     private String text;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -36,5 +37,6 @@ public class CommentEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private ItemEntity itemEntity;
 
+    @Column
     private LocalDateTime created;
 }

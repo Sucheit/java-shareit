@@ -54,14 +54,14 @@ public class BookingService {
             throw new BadRequestException("Время конца бронирования раньше начала!");
         }
         bookingDto.setStatus(Status.WAITING);
-        bookingDto.setBooker(userEntity);
-        bookingDto.setItem(itemEntity);
-        BookingEntity bookingEntity = bookingRepository.save(mapBookingDtoToBookingEntity(bookingDto));
-        return mapBookingEntityToBookingDto(bookingEntity);
+        BookingEntity bookingEntity = mapBookingDtoToBookingEntity(bookingDto);
+        bookingEntity.setItemEntity(itemEntity);
+        bookingEntity.setUserEntity(userEntity);
+        return mapBookingEntityToBookingDto(bookingRepository.save(bookingEntity));
     }
 
     @Transactional
-    public BookingDto updateBooking(Long userId, String approved, Long bookingId) {
+    public BookingDto updateBooking(Long userId, boolean approved, Long bookingId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", userId));
         }
@@ -73,21 +73,16 @@ public class BookingService {
         if (!bookingEntity.getStatus().equals(Status.WAITING)) {
             throw new BadRequestException("Бронирование уже рассмотрено хозяином вещи!");
         }
-        switch (approved) {
-            case "true":
-                bookingEntity.setStatus(Status.APPROVED);
-                break;
-            case "false":
-                bookingEntity.setStatus(Status.REJECTED);
-                break;
-            default:
-                throw new BadRequestException("Не верное значение параметра approved!");
+        if (approved) {
+            bookingEntity.setStatus(Status.APPROVED);
+        } else {
+            bookingEntity.setStatus(Status.REJECTED);
         }
         BookingEntity updateBookingEntity = bookingRepository.save(bookingEntity);
         return mapBookingEntityToBookingDto(updateBookingEntity);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public BookingDto getBooking(Long userId, Long bookingId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", userId));
@@ -101,7 +96,7 @@ public class BookingService {
         return mapBookingEntityToBookingDto(bookingEntity);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<BookingDto> getBookingsByBookerId(Long bookerId, String state) {
         if (userRepository.findById(bookerId).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", bookerId));
@@ -147,7 +142,7 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<BookingDto> getBookingsByOwnerId(Long ownerId, String state) {
         if (userRepository.findById(ownerId).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", ownerId));

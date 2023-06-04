@@ -26,7 +26,7 @@ public class ItemController {
     }
 
     @PatchMapping(value = "/{itemId}")
-    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") long userId,
                               @RequestBody ItemDtoUpdate itemDto, @PathVariable Long itemId) {
         ItemDto updatedItem = itemService.updateItem(userId, itemDto, itemId);
         log.info("Обновили Item: {}", updatedItem);
@@ -35,14 +35,14 @@ public class ItemController {
 
     @GetMapping(value = "/{itemId}")
     public ItemDto getItemById(@RequestHeader(value = "X-Sharer-User-Id", required = false) Long userId,
-                               @PathVariable Long itemId) {
+                               @PathVariable long itemId) {
         ItemDto itemDto = itemService.getItemById(itemId, userId);
         log.info("Получили Item: {}", itemDto);
         return itemDto;
     }
 
     @GetMapping()
-    public List<ItemDto> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
         List<ItemDto> items = itemService.findAllByUserId(userId);
         log.info("Получили список Items: size()={}", items.size());
         return items;
@@ -56,8 +56,8 @@ public class ItemController {
     }
 
     @PostMapping(value = "/{itemId}/comment")
-    public CommentDto addComment(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                 @PathVariable Long itemId,
+    public CommentDto addComment(@RequestHeader(value = "X-Sharer-User-Id") long userId,
+                                 @PathVariable long itemId,
                                  @Valid @RequestBody CommentDto commentDto) {
         CommentDto addedComment = itemService.addComment(userId, itemId, commentDto);
         log.info("Пользователь id={} добавил комментарий вещи id={}: {}", userId, itemId, addedComment);

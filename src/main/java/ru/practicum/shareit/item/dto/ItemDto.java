@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.user.model.UserEntity;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -28,8 +27,6 @@ public class ItemDto implements Comparable<ItemDto> {
 
     @NotNull
     private Boolean available;
-
-    private UserEntity userEntity;
 
     private ItemBooking lastBooking;
 

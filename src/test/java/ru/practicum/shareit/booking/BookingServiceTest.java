@@ -79,7 +79,7 @@ public class BookingServiceTest {
                 .status(Status.APPROVED).endTime(LocalDateTime.now().plusHours(2)).itemEntity(itemEntity.get())
                 .userEntity(booker.get()).build();
         when(bookingRepository.save(Mockito.any(BookingEntity.class))).thenReturn(bookingEntity);
-        BookingDto retrievedBooking = bookingService.updateBooking(1L, "true", 1L);
+        BookingDto retrievedBooking = bookingService.updateBooking(1L, true, 1L);
         assertNotNull(retrievedBooking);
         assertEquals(1, retrievedBooking.getId());
         assertEquals(Status.APPROVED, retrievedBooking.getStatus());
