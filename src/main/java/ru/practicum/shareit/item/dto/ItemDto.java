@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemDto implements Comparable<ItemDto> {
+public class ItemDto {
 
     private Long id;
 
@@ -33,14 +33,4 @@ public class ItemDto implements Comparable<ItemDto> {
     private ItemBooking nextBooking;
 
     private Set<CommentDto> comments;
-
-    @Override
-    public int compareTo(ItemDto o) {
-        if (this.getId() > o.getId()) {
-            return 1;
-        } else if (this.getId() < o.getId()) {
-            return -1;
-        }
-        return 0;
-    }
 }

@@ -7,19 +7,19 @@ import static ru.practicum.shareit.user.model.UserMapper.mapUserEntityToUserDto;
 
 public class BookingMapper {
 
-    public static BookingDto mapBookingEntityToBookingDto(BookingEntity bookingEntity) {
+    public static BookingDto mapBookingEntityToBookingDto(Booking booking) {
         return BookingDto.builder()
-                .id(bookingEntity.getId())
-                .item(mapItemEntityToItemDto(bookingEntity.getItemEntity()))
-                .start(bookingEntity.getStartTime())
-                .end(bookingEntity.getEndTime())
-                .status(bookingEntity.getStatus())
-                .booker(mapUserEntityToUserDto(bookingEntity.getUserEntity()))
+                .id(booking.getId())
+                .item(mapItemEntityToItemDto(booking.getItem()))
+                .start(booking.getStartTime())
+                .end(booking.getEndTime())
+                .status(booking.getStatus())
+                .booker(mapUserEntityToUserDto(booking.getUser()))
                 .build();
     }
 
-    public static BookingEntity mapBookingDtoToBookingEntity(BookingDto bookingDto) {
-        return BookingEntity.builder()
+    public static Booking mapBookingDtoToBookingEntity(BookingDto bookingDto) {
+        return Booking.builder()
                 .id(bookingDto.getId())
                 .startTime(bookingDto.getStart())
                 .endTime(bookingDto.getEnd())

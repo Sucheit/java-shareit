@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import ru.practicum.shareit.user.model.UserEntity;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.Optional;
 
@@ -22,40 +22,40 @@ public class UserRepositoryTest {
 
     @Test
     public void givenNewUser_whenSave_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("name").email("email@mail.com").build();
-        UserEntity insertedUserEntity = userRepository.save(userEntity);
-        assertThat(entityManager.find(UserEntity.class, insertedUserEntity.getId())).isEqualTo(userEntity);
+        User user = User.builder().name("name").email("email@mail.com").build();
+        User insertedUser = userRepository.save(user);
+        assertThat(entityManager.find(User.class, insertedUser.getId())).isEqualTo(user);
     }
 
     @Test
     public void givenUserCreated_whenUpdate_thenSuccess() {
-        UserEntity newUser = UserEntity.builder().name("name").email("email@mail.com").build();
+        User newUser = User.builder().name("name").email("email@mail.com").build();
         entityManager.persist(newUser);
         String newName = "NewName";
         newUser.setName(newName);
         userRepository.save(newUser);
-        assertThat(entityManager.find(UserEntity.class, newUser.getId()).getName()).isEqualTo(newName);
+        assertThat(entityManager.find(User.class, newUser.getId()).getName()).isEqualTo(newName);
     }
 
     @Test
     public void givenUserCreated_whenFindById_thenSuccess() {
-        UserEntity newUser = UserEntity.builder().name("name").email("email@mail.com").build();
+        User newUser = User.builder().name("name").email("email@mail.com").build();
         entityManager.persist(newUser);
-        Optional<UserEntity> retrievedUser = userRepository.findById(newUser.getId());
+        Optional<User> retrievedUser = userRepository.findById(newUser.getId());
         assertThat(retrievedUser).contains(newUser);
     }
 
     @Test
     public void givenUserCreated_whenDelete_thenSuccess() {
-        UserEntity newUser = UserEntity.builder().name("name").email("email@mail.com").build();
+        User newUser = User.builder().name("name").email("email@mail.com").build();
         entityManager.persist(newUser);
         userRepository.delete(newUser);
-        assertThat(entityManager.find(UserEntity.class, newUser.getId())).isNull();
+        assertThat(entityManager.find(User.class, newUser.getId())).isNull();
     }
 
     @Test
     public void givenUserCreated_whenExistByEmail_thenSuccess() {
-        UserEntity newUser = UserEntity.builder().name("name").email("email@mail.com").build();
+        User newUser = User.builder().name("name").email("email@mail.com").build();
         entityManager.persist(newUser);
         assertTrue(userRepository.existsByEmail("email@mail.com"));
     }

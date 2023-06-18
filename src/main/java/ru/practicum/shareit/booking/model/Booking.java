@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import ru.practicum.shareit.item.model.ItemEntity;
-import ru.practicum.shareit.user.model.UserEntity;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "bookings")
-public class BookingEntity implements Comparable<BookingEntity> {
+public class Booking implements Comparable<Booking> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +28,7 @@ public class BookingEntity implements Comparable<BookingEntity> {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "item_id", referencedColumnName = "item_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private ItemEntity itemEntity;
+    private Item item;
 
     @Column
     private LocalDateTime startTime;
@@ -43,10 +43,10 @@ public class BookingEntity implements Comparable<BookingEntity> {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private UserEntity userEntity;
+    private User user;
 
     @Override
-    public int compareTo(BookingEntity o) {
+    public int compareTo(Booking o) {
         if (o.getStartTime().isBefore(this.getStartTime())) {
             return -1;
         } else if (o.getStartTime().isAfter(this.getStartTime())) {

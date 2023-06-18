@@ -9,7 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoUpdate;
-import ru.practicum.shareit.user.model.UserEntity;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class UserServiceTest {
 
     @Test
     public void getUserById() {
-        Optional<UserEntity> optionalUser = Optional.of(UserEntity.builder()
+        Optional<User> optionalUser = Optional.of(User.builder()
                 .id(1L)
                 .email("name@mail.com")
                 .name("name")
@@ -46,7 +46,7 @@ public class UserServiceTest {
 
     @Test
     public void getUsers() {
-        List<UserEntity> returnedUsers = List.of(UserEntity.builder()
+        List<User> returnedUsers = List.of(User.builder()
                 .id(77L)
                 .email("name@mail.com")
                 .name("name")
@@ -61,7 +61,7 @@ public class UserServiceTest {
 
     @Test
     public void deleteUserById() {
-        Optional<UserEntity> optionalUser = Optional.of(UserEntity.builder()
+        Optional<User> optionalUser = Optional.of(User.builder()
                 .id(1L)
                 .email("name@mail.com")
                 .name("name")
@@ -75,7 +75,7 @@ public class UserServiceTest {
 
     @Test
     public void addUser() {
-        UserEntity userEntity = UserEntity.builder()
+        User user = User.builder()
                 .id(1L)
                 .email("name@mail.com")
                 .name("name")
@@ -85,7 +85,7 @@ public class UserServiceTest {
                 .email("name@mail.com")
                 .name("name")
                 .build();
-        when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(userEntity);
+        when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
         UserDto addUser = userService.addUser(userDto);
         assertNotNull(addUser);
         assertEquals(1, addUser.getId());
@@ -94,7 +94,7 @@ public class UserServiceTest {
 
     @Test
     public void updateUser() {
-        UserEntity userEntity = UserEntity.builder()
+        User user = User.builder()
                 .id(1L)
                 .email("name@mail.com")
                 .name("name")
@@ -104,9 +104,9 @@ public class UserServiceTest {
                 .email("name@mail.com")
                 .name("name")
                 .build();
-        when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(userEntity);
+        when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
         when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(Boolean.FALSE);
-        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(userEntity));
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
         UserDto addUser = userService.updateUser(1L, userDtoUpdate);
         assertNotNull(addUser);
         assertEquals(1, addUser.getId());

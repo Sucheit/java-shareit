@@ -7,7 +7,7 @@ import ru.practicum.shareit.exception.AlreadyExistsException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoUpdate;
-import ru.practicum.shareit.user.model.UserEntity;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.UserMapper;
 
 import java.util.List;
@@ -24,33 +24,33 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDto getUserById(Long id) {
-        UserEntity userEntity = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id='%s' не найден", id)));
-        return mapUserEntityToUserDto(userEntity);
+        return mapUserEntityToUserDto(user);
     }
 
     @Transactional
     public UserDto addUser(UserDto userDto) {
-        UserEntity userEntity = mapUserDtoToUserEntity(userDto);
-        return mapUserEntityToUserDto(userRepository.save(userEntity));
+        User user = mapUserDtoToUserEntity(userDto);
+        return mapUserEntityToUserDto(userRepository.save(user));
     }
 
     @Transactional
     public UserDto updateUser(Long id, UserDtoUpdate userDto) {
-        UserEntity userEntity = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id='%s' не найден", id)));
         if (userRepository.existsByEmail(userDto.getEmail())
-                && !userEntity.getEmail().equals(userDto.getEmail())) {
+                && !user.getEmail().equals(userDto.getEmail())) {
             throw new AlreadyExistsException(
                     String.format("Пользователь с email: '%s' уже существует", userDto.getEmail()));
         }
         userDto.setId(id);
-        UserEntity userToUpdate = UserMapper.mapUserDtoToUserEntity(userDto);
+        User userToUpdate = UserMapper.mapUserDtoToUserEntity(userDto);
         if (userToUpdate.getName() == null) {
-            userToUpdate.setName(userEntity.getName());
+            userToUpdate.setName(user.getName());
         }
         if (userToUpdate.getEmail() == null) {
-            userToUpdate.setEmail(userEntity.getEmail());
+            userToUpdate.setEmail(user.getEmail());
         }
         return mapUserEntityToUserDto(userRepository.save(userToUpdate));
     }
