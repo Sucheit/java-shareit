@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.AlreadyExistsException;
@@ -18,12 +20,12 @@ import static ru.practicum.shareit.user.model.UserMapper.mapUserEntityToUserDto;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserService {
-
-    private final UserRepository userRepository;
+    UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public UserDto getUserById(Long id) {
+    public UserDto getUserById(long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id='%s' не найден", id)));
         return mapUserEntityToUserDto(user);
@@ -36,7 +38,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto updateUser(Long id, UserDtoUpdate userDto) {
+    public UserDto updateUser(long id, UserDtoUpdate userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id='%s' не найден", id)));
         if (userRepository.existsByEmail(userDto.getEmail())
@@ -63,7 +65,7 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUserById(Long id) {
+    public void deleteUserById(long id) {
         if (userRepository.findById(id).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id='%s' не найден", id));
         }

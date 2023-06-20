@@ -1,11 +1,14 @@
 package ru.practicum.shareit.booking;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
@@ -23,19 +26,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingServiceTest {
 
+    final PageRequest pageRequest = PageRequest.of(0, 20);
     @InjectMocks
-    private BookingService bookingService;
-
+    BookingService bookingService;
     @Mock
-    private ItemRepository itemRepository;
-
+    ItemRepository itemRepository;
     @Mock
-    private UserRepository userRepository;
-
+    UserRepository userRepository;
     @Mock
-    private BookingRepository bookingRepository;
+    BookingRepository bookingRepository;
 
     @Test
     public void addBooking() {
@@ -122,8 +124,8 @@ public class BookingServiceTest {
                 .endTime(LocalDateTime.now().plusHours(2)).item(itemEntity.get())
                 .user(booker.get()).build());
         when(userRepository.findById(3L)).thenReturn(booker);
-        when(bookingRepository.findByUserIdOrderByStartTimeDesc(3L)).thenReturn(bookingEntities);
-        List<BookingDto> bookingDtoList = bookingService.getBookingsByBookerId(3L, "ALL");
+        when(bookingRepository.findByUserIdOrderByStartTimeDesc(3L, pageRequest)).thenReturn(bookingEntities);
+        List<BookingDto> bookingDtoList = bookingService.getBookingsByBookerId(3L, "ALL", 0, 20);
         assertNotNull(bookingDtoList);
         assertEquals(1, bookingDtoList.size());
         assertEquals(1, bookingDtoList.get(0).getId());
@@ -142,8 +144,8 @@ public class BookingServiceTest {
                 .endTime(LocalDateTime.now().plusHours(2)).item(itemEntity.get())
                 .user(booker.get()).build());
         when(userRepository.findById(1L)).thenReturn(owner);
-        when(bookingRepository.findByItemUserIdOrderByStartTimeDesc(1L)).thenReturn(bookingEntities);
-        List<BookingDto> bookingDtoList = bookingService.getBookingsByOwnerId(1L, "ALL");
+        when(bookingRepository.findByItemUserIdOrderByStartTimeDesc(1L, pageRequest)).thenReturn(bookingEntities);
+        List<BookingDto> bookingDtoList = bookingService.getBookingsByOwnerId(1L, "ALL", 0, 20);
         assertNotNull(bookingDtoList);
         assertEquals(1, bookingDtoList.size());
         assertEquals(1, bookingDtoList.get(0).getId());

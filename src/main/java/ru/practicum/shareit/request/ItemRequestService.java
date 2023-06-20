@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.BadRequestException;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.model.ItemMapper;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.model.ItemRequestMapper;
@@ -14,9 +16,11 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.request.model.ItemRequestMapper.mapDtoToItemRequest;
+import static ru.practicum.shareit.exception.Validation.validatePagination;
 import static ru.practicum.shareit.request.model.ItemRequestMapper.mapItemRequestToDto;
 
 @Service
@@ -28,38 +32,54 @@ public class ItemRequestService {
 
     UserRepository userRepository;
 
-    public Iterable<ItemRequestDto> getItemRequestsByUserId(long userId) {
+    ItemRepository itemRepository;
+
+    BiConsumer<ItemRequestDto, ItemRepository> setItems = (itemRequestDto, repository) ->
+            itemRequestDto.setItems((repository.findByItemRequestId(itemRequestDto.getId())).stream()
+                    .map(ItemMapper::mapItemToItemDto).collect(Collectors.toList()));
+
+    @Transactional(readOnly = true)
+    public List<ItemRequestDto> getItemRequestsByUserId(long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден.", userId)));
-        return itemRequestRepository.findAllByUserIdOrderByIdAsc(user.getId()).stream()
+        return itemRequestRepository.findByUserIdOrderByCreatedAsc(user.getId()).stream()
                 .map(ItemRequestMapper::mapItemRequestToDto)
+                .peek(itemRequestDto -> setItems.accept(itemRequestDto, itemRepository))
                 .collect(Collectors.toList());
     }
 
-    public Iterable<ItemRequestDto> getItemRequestsByUserIdWithPages(long userId, Integer from, Integer size) {
+    @Transactional(readOnly = true)
+    public List<ItemRequestDto> getItemRequestsByOtherUsers(long userId, int from, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден.", userId)));
-        if (from == null || size == null) {
-            return itemRequestRepository.findAllByUserIdOrderByIdAsc(user.getId()).stream()
-                    .map(ItemRequestMapper::mapItemRequestToDto)
-                    .collect(Collectors.toList());
-        } else {
-            if (from < 0 || size < 1) {
-                throw new BadRequestException("Не верные параметры from или size");
-            }
-            return itemRequestRepository.findAllByUserIdOrderByIdAsc(user.getId(), PageRequest.of(from, size)).stream()
-                    .map(ItemRequestMapper::mapItemRequestToDto)
-                    .collect(Collectors.toList());
-        }
+        validatePagination(from, size);
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+        return itemRequestRepository
+                .findByUserIdNotOrderByCreatedAsc(user.getId(), pageRequest).stream()
+                .map(ItemRequestMapper::mapItemRequestToDto)
+                .peek(itemRequestDto -> setItems.accept(itemRequestDto, itemRepository))
+                .collect(Collectors.toList());
     }
 
+    @Transactional
     public ItemRequestDto addItemRequest(ItemRequestDto itemRequestDto, long userId) {
-        User user = userRepository.findById(userId)
+        return mapItemRequestToDto(itemRequestRepository.save(ItemRequest.builder()
+                .description(itemRequestDto.getDescription())
+                .user(userRepository.findById(userId)
+                        .orElseThrow(
+                                () -> new NotFoundException(String.format("Пользователь id=%s не найден.", userId))))
+                .created(LocalDateTime.now())
+                .build()));
+    }
+
+    @Transactional
+    public ItemRequestDto getItemRequestById(long userId, long itemRequestId) {
+        userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден.", userId)));
-        ItemRequest itemRequest = mapDtoToItemRequest(itemRequestDto);
-        itemRequest.setUser(user);
-        itemRequest.setCreated(LocalDateTime.now());
-        itemRequest = itemRequestRepository.save(itemRequest);
-        return mapItemRequestToDto(itemRequest);
+        ItemRequestDto itemRequestDto = mapItemRequestToDto(itemRequestRepository.findById(itemRequestId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Запрос предмета id=%s не найден.", itemRequestId))));
+        setItems.accept(itemRequestDto, itemRepository);
+        return itemRequestDto;
     }
 }

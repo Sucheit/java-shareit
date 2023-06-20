@@ -1,11 +1,10 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -15,24 +14,29 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "items")
 public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
-    private Long id;
+    Long id;
 
     @Column
-    private String name;
+    String name;
 
     @Column
-    private String description;
+    String description;
 
     @Column
-    private Boolean available;
+    Boolean available;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User user;
+    User user;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "item_request_id", referencedColumnName = "item_request_id")
+    ItemRequest itemRequest;
 }

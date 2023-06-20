@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -19,28 +20,35 @@ public class ItemRequestController {
     ItemRequestService itemRequestService;
 
     @PostMapping
-    public ItemRequestDto addRequest(@RequestHeader("X-Sharer-User-Id") long userId,
-                                     @Valid @RequestBody ItemRequestDto itemRequestDto) {
+    public ItemRequestDto createItemRequest(@RequestHeader("X-Sharer-User-Id") long userId,
+                                            @Valid @RequestBody ItemRequestDto itemRequestDto) {
         ItemRequestDto addedRequest = itemRequestService.addItemRequest(itemRequestDto, userId);
         log.info("Добавлен запрос: {}", addedRequest);
-        return itemRequestService.addItemRequest(itemRequestDto, userId);
+        return addedRequest;
     }
 
     @GetMapping
     public Iterable<ItemRequestDto> getItemRequests(@RequestHeader("X-Sharer-User-Id") long userId) {
-        Iterable<ItemRequestDto> itemRequests = itemRequestService.getItemRequestsByUserId(userId);
-        log.info("Получен список запросов пользователя id={}, размер = {}", userId, itemRequests);
+        List<ItemRequestDto> itemRequests = itemRequestService.getItemRequestsByUserId(userId);
+        log.info("Получен список запросов пользователя id={}, размер = {}", userId, itemRequests.size());
         return itemRequests;
     }
 
     @GetMapping(path = "/all")
-    public Iterable<ItemRequestDto> getItemRequestsFromAndSize(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                               @RequestParam(required = false) Integer from,
-                                                               @RequestParam(required = false) Integer size) {
-        Iterable<ItemRequestDto> itemRequests = itemRequestService.getItemRequestsByUserIdWithPages(userId, from, size);
-        log.info("Получен список запросов пользователя id={}, размер = {}", userId, itemRequests);
+    public Iterable<ItemRequestDto> getItemRequestsByOtherUsers(
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @RequestParam(required = false, defaultValue = "0") Integer from,
+            @RequestParam(required = false, defaultValue = "20") Integer size) {
+        List<ItemRequestDto> itemRequests = itemRequestService.getItemRequestsByOtherUsers(userId, from, size);
+        log.info("Получен список запросов пользователя id={}, размер = {}", userId, itemRequests.size());
         return itemRequests;
     }
 
-
+    @GetMapping(path = "/{requestId}")
+    public ItemRequestDto getItemRequestById(@RequestHeader("X-Sharer-User-Id") long userId,
+                                             @PathVariable long requestId) {
+        ItemRequestDto itemRequestDto = itemRequestService.getItemRequestById(userId, requestId);
+        log.info("Получен запрос предмета: {}", itemRequestDto);
+        return itemRequestDto;
+    }
 }

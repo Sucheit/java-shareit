@@ -2,7 +2,9 @@ package ru.practicum.shareit.item;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
 import lombok.SneakyThrows;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +25,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ItemController.class)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemControllerTest {
 
-
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
 
     @MockBean
-    private ItemService itemService;
+    ItemService itemService;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     @Test
     @SneakyThrows
@@ -162,30 +164,30 @@ public class ItemControllerTest {
     public void getItemsByUserId_whenInvokedWithValidUserId_thenExpectOk() {
         List<ItemDto> items = List.of(ItemDto.builder().id(3L).name("name")
                 .description("desc").available(Boolean.TRUE).build());
-        when(itemService.findAllByUserId(Mockito.anyLong())).thenReturn(items);
+        when(itemService.findAllByUserId(anyLong(), anyInt(), anyInt())).thenReturn(items);
         String response = mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", Mockito.anyLong())
+                        .header("X-Sharer-User-Id", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(itemService, atLeast(1)).findAllByUserId(Mockito.anyLong());
+        verify(itemService, atLeast(1)).findAllByUserId(1L, 0, 20);
         assertEquals(response, objectMapper.writeValueAsString(items));
     }
 
     @Test
     @SneakyThrows
     public void getItemsByUserId_whenInvokedWithInvalidUserId_thenExpectNotFound() {
-        when(itemService.findAllByUserId(Mockito.anyLong())).thenThrow(NotFoundException.class);
+        when(itemService.findAllByUserId(anyLong(), anyInt(), anyInt())).thenThrow(NotFoundException.class);
         mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", Mockito.anyLong())
+                        .header("X-Sharer-User-Id", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(itemService, atLeast(1)).findAllByUserId(Mockito.anyLong());
+        verify(itemService, atLeast(1)).findAllByUserId(1L, 0, 20);
     }
 
     @Test
@@ -193,14 +195,14 @@ public class ItemControllerTest {
     public void findBySearchTerm_thenExpectOk() {
         List<ItemDto> items = List.of(ItemDto.builder().id(3L).name("name")
                 .description("desc").available(Boolean.TRUE).build());
-        when(itemService.findByNameOrDescription(Mockito.anyString())).thenReturn(items);
+        when(itemService.findByNameOrDescription(anyString(), anyInt(), anyInt())).thenReturn(items);
         String response = mockMvc.perform(get("/items/search?text=searchTerm")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(itemService, atLeast(1)).findByNameOrDescription(Mockito.anyString());
+        verify(itemService, atLeast(1)).findByNameOrDescription(anyString(), anyInt(), anyInt());
         assertEquals(response, objectMapper.writeValueAsString(items));
     }
 }

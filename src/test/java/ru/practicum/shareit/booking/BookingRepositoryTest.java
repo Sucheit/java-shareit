@@ -1,9 +1,12 @@
 package ru.practicum.shareit.booking;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.item.model.Item;
@@ -18,13 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingRepositoryTest {
 
+    final PageRequest pageRequest = PageRequest.of(0, 20);
     @Autowired
-    private TestEntityManager entityManager;
-
+    TestEntityManager entityManager;
     @Autowired
-    private BookingRepository bookingRepository;
+    BookingRepository bookingRepository;
 
     @Test
     public void givenNewBooking_whenSave_thenSuccess() {
@@ -98,7 +102,7 @@ public class BookingRepositoryTest {
                 .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
                 .item(item).user(user).build();
         entityManager.persist(booking);
-        List<Booking> bookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
+        List<Booking> bookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId(), pageRequest);
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
         assertEquals(booking, bookings.get(0));
@@ -117,7 +121,7 @@ public class BookingRepositoryTest {
                 .startTime(LocalDateTime.now().plusHours(1)).endTime(LocalDateTime.now().plusHours(2))
                 .item(item).user(booker).build();
         entityManager.persist(booking);
-        List<Booking> bookings = bookingRepository.findByItemUserIdOrderByStartTimeDesc(owner.getId());
+        List<Booking> bookings = bookingRepository.findByItemUserIdOrderByStartTimeDesc(owner.getId(), pageRequest);
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
         assertEquals(booking, bookings.get(0));

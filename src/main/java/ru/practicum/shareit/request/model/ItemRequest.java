@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "requests")
+@Table(name = "item_requests")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,10 +20,10 @@ public class ItemRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "request_id")
+    @Column(name = "item_request_id")
     Long id;
 
-    @Column(name = "description")
+    @Column
     String description;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -32,5 +32,5 @@ public class ItemRequest {
     User user;
 
     @Column
-    private LocalDateTime created;
+    LocalDateTime created;
 }

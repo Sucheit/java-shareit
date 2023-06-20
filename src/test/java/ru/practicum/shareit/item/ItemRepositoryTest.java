@@ -1,9 +1,12 @@
 package ru.practicum.shareit.item;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
@@ -16,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRepositoryTest {
 
-
+    final PageRequest pageRequest = PageRequest.of(0, 20);
     @Autowired
-    private ItemRepository itemRepository;
-
+    ItemRepository itemRepository;
     @Autowired
-    private TestEntityManager entityManager;
+    TestEntityManager entityManager;
 
     @Test
     public void givenNewItem_whenSave_thenSuccess() {
@@ -77,7 +80,7 @@ public class ItemRepositoryTest {
         Item item = Item.builder().name("name").description("desc")
                 .available(Boolean.TRUE).user(user).build();
         entityManager.persist(item);
-        List<Item> items = itemRepository.findByUserEntityIdOrderByIdAsc(user.getId());
+        List<Item> items = itemRepository.findByUserIdOrderByIdAsc(user.getId(), pageRequest);
         assertNotNull(items);
         assertEquals(1, items.size());
         assertEquals(item, items.get(0));
@@ -94,12 +97,12 @@ public class ItemRepositoryTest {
         entityManager.persist(item1);
         entityManager.persist(item2);
         List<Item> items1 = itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("hAmM", "hAmM");
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("hAmM", "hAmM", pageRequest);
         assertNotNull(items1);
         assertEquals(1, items1.size());
         assertEquals(item1, items1.get(0));
         List<Item> items2 = itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("WEld", "WEld");
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("WEld", "WEld", pageRequest);
         assertNotNull(items2);
         assertEquals(1, items2.size());
         assertEquals(item2, items2.get(0));

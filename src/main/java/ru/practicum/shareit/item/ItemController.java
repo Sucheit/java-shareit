@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -10,13 +12,14 @@ import ru.practicum.shareit.item.dto.ItemDtoUpdate;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
-@Slf4j
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ItemController {
 
-    private final ItemService itemService;
+    ItemService itemService;
 
     @PostMapping()
     public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody ItemDto itemDto) {
@@ -42,15 +45,19 @@ public class ItemController {
     }
 
     @GetMapping()
-    public List<ItemDto> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
-        List<ItemDto> items = itemService.findAllByUserId(userId);
+    public List<ItemDto> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") long userId,
+                                          @RequestParam(required = false, defaultValue = "0") int from,
+                                          @RequestParam(required = false, defaultValue = "20") int size) {
+        List<ItemDto> items = itemService.findAllByUserId(userId, from, size);
         log.info("Получили список Items: size()={}", items.size());
         return items;
     }
 
     @GetMapping(value = "/search")
-    public List<ItemDto> findBySearchTerm(@RequestParam(value = "text") String text) {
-        List<ItemDto> items = itemService.findByNameOrDescription(text);
+    public List<ItemDto> findBySearchTerm(@RequestParam(value = "text") String text,
+                                          @RequestParam(required = false, defaultValue = "0") int from,
+                                          @RequestParam(required = false, defaultValue = "20") int size) {
+        List<ItemDto> items = itemService.findByNameOrDescription(text, from, size);
         log.info("Получили список size()={} по фильтру: {}", items.size(), text);
         return items;
     }

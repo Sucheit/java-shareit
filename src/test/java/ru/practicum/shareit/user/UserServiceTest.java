@@ -1,5 +1,7 @@
 package ru.practicum.shareit.user;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -19,13 +21,15 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserServiceTest {
 
     @InjectMocks
-    private UserService userService;
+    UserService userService;
 
     @Mock
-    private UserRepository userRepository;
+    UserRepository userRepository;
+
 
     @Test
     public void getUserById() {

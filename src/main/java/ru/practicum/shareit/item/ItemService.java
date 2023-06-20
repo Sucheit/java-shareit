@@ -1,11 +1,12 @@
 package ru.practicum.shareit.item;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingMapper;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ForbiddenException;
@@ -18,67 +19,67 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.ItemMapper;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.exception.Validation.validatePagination;
 import static ru.practicum.shareit.item.model.ItemMapper.*;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ItemService {
 
-    private final ItemRepository itemRepository;
+    ItemRepository itemRepository;
 
-    private final UserRepository userRepository;
+    UserRepository userRepository;
 
-    private final BookingRepository bookingRepository;
+    BookingRepository bookingRepository;
 
-    private final CommentRepository commentRepository;
+    CommentRepository commentRepository;
 
-    private final BiConsumer<ItemDto, List<Booking>> setLastAndNextBookings = (itemDto, bookingEntities) -> {
-        bookingEntities.stream()
-                .sorted()
-                .map(BookingMapper::mapBookingEntityToBookingDto)
-                .filter(bookingDto -> bookingDto.getStart().isBefore(LocalDateTime.now()) &&
-                        bookingDto.getStatus().equals(Status.APPROVED))
-                .findFirst()
-                .ifPresent(bookingDto -> itemDto.setLastBooking(mapBookingDtoToItemBooking(bookingDto)));
-        bookingEntities.stream()
-                .sorted(Comparator.reverseOrder())
-                .map(BookingMapper::mapBookingEntityToBookingDto)
-                .filter(bookingDto -> bookingDto.getStart().isAfter(LocalDateTime.now()) &&
-                        bookingDto.getStatus().equals(Status.APPROVED))
-                .findFirst()
-                .ifPresent(bookingDto -> itemDto.setNextBooking(mapBookingDtoToItemBooking(bookingDto)));
+    ItemRequestRepository itemRequestRepository;
+    BiConsumer<ItemDto, BookingRepository> setLastAndNextBookings = (itemDto, bookingRepository) -> {
+        bookingRepository.findFirstByItemIdAndAndStartTimeBeforeAndStatusEqualsOrderByStartTimeDesc(
+                        itemDto.getId(), LocalDateTime.now(), Status.APPROVED)
+                .ifPresent(booking -> itemDto.setLastBooking(mapBookingDtoToItemBooking(booking)));
+        bookingRepository.findFirstByItemIdAndAndStartTimeAfterAndStatusEqualsOrderByStartTimeAsc(
+                        itemDto.getId(), LocalDateTime.now(), Status.APPROVED)
+                .ifPresent(booking -> itemDto.setNextBooking(mapBookingDtoToItemBooking(booking)));
     };
 
     @Transactional
-    public ItemDto addItem(Long userId, ItemDto itemDto) {
+    public ItemDto addItem(long userId, ItemDto itemDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден", userId)));
-        Item item = mapItemDtoToItemEntity(itemDto);
+        Item item = mapItemDtoToItem(itemDto);
+        Long requestId = itemDto.getRequestId();
+        if (requestId != null) {
+            item.setItemRequest(itemRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new NotFoundException(String.format("Запрос id=%s не найден", requestId))));
+        }
         item.setUser(user);
-        return mapItemEntityToItemDto(itemRepository.save(item));
+        return mapItemToItemDto(itemRepository.save(item));
     }
 
     @Transactional
-    public ItemDto updateItem(Long userId, ItemDtoUpdate itemDtoUpdate, Long itemId) {
+    public ItemDto updateItem(long userId, ItemDtoUpdate itemDtoUpdate, long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format("Вещь id=%s не найдена", itemId)));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден", userId)));
-        if (!userId.equals(item.getUser().getId())) {
+        if (userId != item.getUser().getId()) {
             throw new ForbiddenException(String.format("Пользователь id=%s не соответствует вещи", userId));
         }
-        Item itemToUpdate = mapItemDtoToItemEntity(itemDtoUpdate);
+        Item itemToUpdate = mapItemDtoToItem(itemDtoUpdate);
         itemToUpdate.setUser(user);
         itemToUpdate.setId(itemId);
         if (itemDtoUpdate.getName() == null) {
@@ -90,20 +91,19 @@ public class ItemService {
         if (itemDtoUpdate.getAvailable() == null) {
             itemToUpdate.setAvailable(item.getAvailable());
         }
-        return mapItemEntityToItemDto(itemRepository.save(itemToUpdate));
+        return mapItemToItemDto(itemRepository.save(itemToUpdate));
     }
 
     @Transactional(readOnly = true)
-    public ItemDto getItemById(Long itemId, Long userId) {
+    public ItemDto getItemById(long itemId, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format("Вещь id=%s не найдена", itemId)));
-        ItemDto itemDto = mapItemEntityToItemDto(item);
+        ItemDto itemDto = mapItemToItemDto(item);
         if (userId != null && userId.equals(item.getUser().getId())) {
             if (userRepository.findById(userId).isEmpty()) {
                 throw new NotFoundException(String.format("Пользователь id=%s не найден", userId));
             }
-            List<Booking> bookingEntities = bookingRepository.findByItemIdOrderByStartTimeDesc(itemId);
-            setLastAndNextBookings.accept(itemDto, bookingEntities);
+            setLastAndNextBookings.accept(itemDto, bookingRepository);
         }
         Set<CommentDto> comments = commentRepository.findByItemId(itemId).stream()
                 .map(ItemMapper::mapCommentEntityToCommentDto)
@@ -113,30 +113,34 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> findAllByUserId(Long userId) {
+    public List<ItemDto> findAllByUserId(Long userId, int from, int size) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден", userId));
         }
-        return itemRepository.findByUserIdOrderByIdAsc(userId).stream()
-                .map(ItemMapper::mapItemEntityToItemDto)
-                .peek(itemDto -> setLastAndNextBookings.accept(itemDto,
-                        bookingRepository.findByItemIdOrderByStartTimeDesc(itemDto.getId())))
+        validatePagination(from, size);
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+        return itemRepository.findByUserIdOrderByIdAsc(userId, pageRequest).stream()
+                .map(ItemMapper::mapItemToItemDto)
+                .peek(itemDto -> setLastAndNextBookings.accept(itemDto, bookingRepository))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> findByNameOrDescription(String text) {
+    public List<ItemDto> findByNameOrDescription(String text, int from, int size) {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
-        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text).stream()
+        validatePagination(from, size);
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text, pageRequest)
+                .stream()
                 .filter(itemEntity -> itemEntity.getAvailable().equals(Boolean.TRUE))
-                .map(ItemMapper::mapItemEntityToItemDto)
+                .map(ItemMapper::mapItemToItemDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
+    public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден", userId)));
         Item item = itemRepository.findById(itemId)
