@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.model.BookingMapper.mapBookingDtoToBookingEntity;
 import static ru.practicum.shareit.booking.model.BookingMapper.mapBookingEntityToBookingDto;
-import static ru.practicum.shareit.exception.Validation.validateBookingState;
 import static ru.practicum.shareit.exception.Validation.validatePagination;
 
 @Service
@@ -65,31 +64,37 @@ public class BookingService {
         return mapBookingEntityToBookingDto(bookingRepository.save(booking));
     }
 
+    private static State validateBookingState(String str) {
+        State state;
+        try {
+            state = State.valueOf(str);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(String.format("Unknown state: %s", str));
+        }
+        return state;
+    }
+
     @Transactional
-    public BookingDto updateBooking(Long userId, boolean approved, Long bookingId) {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NotFoundException(String.format("Пользователь id=%s не найден!", userId));
+    public BookingDto updateBooking(Long ownerId, boolean approved, Long bookingId) {
+        if (!userRepository.existsById(ownerId)) {
+            throw new NotFoundException(String.format("Пользователь id=%s не найден!", ownerId));
         }
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(String.format("Бронирование id=%s не найдено!", bookingId)));
-        if (!userId.equals(booking.getItem().getUser().getId())) {
+        if (!ownerId.equals(booking.getItem().getUser().getId())) {
             throw new NotFoundException("Бронирование может редактировать только хозяин вещи!");
         }
         if (!booking.getStatus().equals(Status.WAITING)) {
             throw new BadRequestException("Бронирование уже рассмотрено хозяином вещи!");
         }
-        if (approved) {
-            booking.setStatus(Status.APPROVED);
-        } else {
-            booking.setStatus(Status.REJECTED);
-        }
+        booking.setStatus(approved ? Status.APPROVED : Status.REJECTED);
         Booking updateBooking = bookingRepository.save(booking);
         return mapBookingEntityToBookingDto(updateBooking);
     }
 
     @Transactional(readOnly = true)
     public BookingDto getBooking(long userId, long bookingId) {
-        if (userRepository.findById(userId).isEmpty()) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", userId));
         }
         Booking booking = bookingRepository.findById(bookingId)
@@ -103,86 +108,82 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingDto> getBookingsByBookerId(long bookerId, String state, int from, int size) {
-        if (userRepository.findById(bookerId).isEmpty()) {
+        if (!userRepository.existsById(bookerId)) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", bookerId));
         }
         validatePagination(from, size);
         PageRequest pageRequest = PageRequest.of(from / size, size);
         State methodState = validateBookingState(state);
-        List<Booking> bookingEntityStream;
+        List<Booking> bookingList = Collections.emptyList();
         switch (methodState) {
             case ALL:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByUserIdOrderByStartTimeDesc(bookerId, pageRequest);
                 break;
             case WAITING:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByUserIdAndStatusEqualsOrderByStartTimeDesc(bookerId, Status.WAITING, pageRequest);
                 break;
             case REJECTED:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByUserIdAndStatusEqualsOrderByStartTimeDesc(bookerId, Status.REJECTED, pageRequest);
                 break;
             case PAST:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByUserIdAndEndTimeBeforeOrderByStartTimeDesc(bookerId, LocalDateTime.now(), pageRequest);
                 break;
             case CURRENT:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(bookerId,
                                 LocalDateTime.now(), LocalDateTime.now(), pageRequest);
                 break;
             case FUTURE:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByUserIdAndStartTimeAfterOrderByStartTimeDesc(bookerId, LocalDateTime.now(), pageRequest);
                 break;
-            default:
-                bookingEntityStream = Collections.emptyList();
         }
-        return bookingEntityStream.stream()
+        return bookingList.stream()
                 .map(BookingMapper::mapBookingEntityToBookingDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<BookingDto> getBookingsByOwnerId(long ownerId, String state, int from, int size) {
-        if (userRepository.findById(ownerId).isEmpty()) {
+        if (!userRepository.existsById(ownerId)) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден!", ownerId));
         }
         validatePagination(from, size);
         PageRequest pageRequest = PageRequest.of(from / size, size);
         State methodState = validateBookingState(state);
-        List<Booking> bookingEntityStream;
+        List<Booking> bookingList = Collections.emptyList();
         switch (methodState) {
             case ALL:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByItemUserIdOrderByStartTimeDesc(ownerId, pageRequest);
                 break;
             case WAITING:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByItemUserIdAndStatusEqualsOrderByStartTimeDesc(ownerId, Status.WAITING, pageRequest);
                 break;
             case REJECTED:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByItemUserIdAndStatusEqualsOrderByStartTimeDesc(ownerId, Status.REJECTED, pageRequest);
                 break;
             case PAST:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByItemUserIdAndEndTimeBeforeOrderByStartTimeDesc(ownerId, LocalDateTime.now(), pageRequest);
                 break;
             case CURRENT:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByItemUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(ownerId,
                                 LocalDateTime.now(), LocalDateTime.now(), pageRequest);
                 break;
             case FUTURE:
-                bookingEntityStream = bookingRepository
+                bookingList = bookingRepository
                         .findByItemUserIdAndStartTimeAfterOrderByStartTimeDesc(ownerId, LocalDateTime.now(), pageRequest);
                 break;
-            default:
-                bookingEntityStream = Collections.emptyList();
         }
-        return bookingEntityStream.stream()
+        return bookingList.stream()
                 .map(BookingMapper::mapBookingEntityToBookingDto)
                 .collect(Collectors.toList());
     }

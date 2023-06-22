@@ -5,7 +5,7 @@ import ru.practicum.shareit.user.dto.UserDtoUpdate;
 
 public class UserMapper {
 
-    public static User mapUserDtoToUserEntity(UserDto userDto) {
+    public static User mapUserDtoToUser(UserDto userDto) {
         return User.builder()
                 .id(userDto.getId())
                 .name(userDto.getName())
@@ -13,7 +13,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static User mapUserDtoToUserEntity(UserDtoUpdate userDto) {
+    public static User mapUserDtoToUser(UserDtoUpdate userDto) {
         return User.builder()
                 .id(userDto.getId())
                 .name(userDto.getName())

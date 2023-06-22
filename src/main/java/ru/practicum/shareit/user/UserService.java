@@ -15,7 +15,6 @@ import ru.practicum.shareit.user.model.UserMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.user.model.UserMapper.mapUserDtoToUserEntity;
 import static ru.practicum.shareit.user.model.UserMapper.mapUserEntityToUserDto;
 
 @Service
@@ -33,7 +32,7 @@ public class UserService {
 
     @Transactional
     public UserDto addUser(UserDto userDto) {
-        User user = mapUserDtoToUserEntity(userDto);
+        User user = UserMapper.mapUserDtoToUser(userDto);
         return mapUserEntityToUserDto(userRepository.save(user));
     }
 
@@ -47,7 +46,7 @@ public class UserService {
                     String.format("Пользователь с email: '%s' уже существует", userDto.getEmail()));
         }
         userDto.setId(id);
-        User userToUpdate = UserMapper.mapUserDtoToUserEntity(userDto);
+        User userToUpdate = UserMapper.mapUserDtoToUser(userDto);
         if (userToUpdate.getName() == null) {
             userToUpdate.setName(user.getName());
         }

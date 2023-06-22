@@ -95,14 +95,14 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public ItemDto getItemById(long itemId, Long userId) {
+    public ItemDto getItemById(long itemId, long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(String.format("Пользователь id=%s не найден", userId));
+        }
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format("Вещь id=%s не найдена", itemId)));
         ItemDto itemDto = mapItemToItemDto(item);
-        if (userId != null && userId.equals(item.getUser().getId())) {
-            if (userRepository.findById(userId).isEmpty()) {
-                throw new NotFoundException(String.format("Пользователь id=%s не найден", userId));
-            }
+        if (userId == item.getUser().getId()) {
             setLastAndNextBookings.accept(itemDto, bookingRepository);
         }
         Set<CommentDto> comments = commentRepository.findByItemId(itemId).stream()
@@ -114,7 +114,7 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public List<ItemDto> findAllByUserId(Long userId, int from, int size) {
-        if (userRepository.findById(userId).isEmpty()) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format("Пользователь id=%s не найден", userId));
         }
         validatePagination(from, size);
