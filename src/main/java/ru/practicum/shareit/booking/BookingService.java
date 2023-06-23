@@ -65,13 +65,11 @@ public class BookingService {
     }
 
     private static State validateBookingState(String str) {
-        State state;
         try {
-            state = State.valueOf(str);
+            return State.valueOf(str);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(String.format("Unknown state: %s", str));
         }
-        return state;
     }
 
     @Transactional

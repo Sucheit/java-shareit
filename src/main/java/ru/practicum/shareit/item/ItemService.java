@@ -27,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.exception.Validation.validatePagination;
@@ -47,14 +46,15 @@ public class ItemService {
     CommentRepository commentRepository;
 
     ItemRequestRepository itemRequestRepository;
-    BiConsumer<ItemDto, BookingRepository> setLastAndNextBookings = (itemDto, bookingRepository) -> {
+
+    private void setLastAndNextBookings(ItemDto itemDto) {
         bookingRepository.findFirstByItemIdAndAndStartTimeBeforeAndStatusEqualsOrderByStartTimeDesc(
                         itemDto.getId(), LocalDateTime.now(), Status.APPROVED)
                 .ifPresent(booking -> itemDto.setLastBooking(mapBookingDtoToItemBooking(booking)));
         bookingRepository.findFirstByItemIdAndAndStartTimeAfterAndStatusEqualsOrderByStartTimeAsc(
                         itemDto.getId(), LocalDateTime.now(), Status.APPROVED)
                 .ifPresent(booking -> itemDto.setNextBooking(mapBookingDtoToItemBooking(booking)));
-    };
+    }
 
     @Transactional
     public ItemDto addItem(long userId, ItemDto itemDto) {
@@ -103,7 +103,7 @@ public class ItemService {
                 .orElseThrow(() -> new NotFoundException(String.format("Вещь id=%s не найдена", itemId)));
         ItemDto itemDto = mapItemToItemDto(item);
         if (userId == item.getUser().getId()) {
-            setLastAndNextBookings.accept(itemDto, bookingRepository);
+            setLastAndNextBookings(itemDto);
         }
         Set<CommentDto> comments = commentRepository.findByItemId(itemId).stream()
                 .map(ItemMapper::mapCommentEntityToCommentDto)
@@ -121,7 +121,7 @@ public class ItemService {
         PageRequest pageRequest = PageRequest.of(from / size, size);
         return itemRepository.findByUserIdOrderByIdAsc(userId, pageRequest).stream()
                 .map(ItemMapper::mapItemToItemDto)
-                .peek(itemDto -> setLastAndNextBookings.accept(itemDto, bookingRepository))
+                .peek(this::setLastAndNextBookings)
                 .collect(Collectors.toList());
     }
 

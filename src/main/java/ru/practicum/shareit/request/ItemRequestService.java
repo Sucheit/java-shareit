@@ -72,7 +72,7 @@ public class ItemRequestService {
                 .build()));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ItemRequestDto getItemRequestById(long userId, long itemRequestId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь id=%s не найден.", userId)));
