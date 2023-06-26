@@ -1,5 +1,7 @@
 package ru.practicum.shareit.item;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.Before;
 import org.junit.Test;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -12,9 +14,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemDtoValidationTest {
 
-    private Validator validator;
+    Validator validator;
 
     @Before
     public void setUp() {

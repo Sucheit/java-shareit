@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.Before;
 import org.junit.Test;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -13,9 +15,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingDtoValidationTest {
 
-    private Validator validator;
+    Validator validator;
 
     @Before
     public void setUp() {

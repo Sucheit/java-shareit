@@ -1,7 +1,9 @@
 package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
 import lombok.SneakyThrows;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = BookingController.class)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingControllerTest {
 
     @Autowired
@@ -132,28 +135,28 @@ public class BookingControllerTest {
     public void getBookingsByBookerId_whenInvokedWithValidId_thenExpectOk() {
         List<BookingDto> retrievedBookings = List.of(BookingDto.builder().id(1L).status(Status.APPROVED)
                 .start(LocalDateTime.now().plusHours(1)).end(LocalDateTime.now().plusHours(2)).build());
-        when(bookingService.getBookingsByBookerId(1L, "ALL")).thenReturn(retrievedBookings);
+        when(bookingService.getBookingsByBookerId(1L, "ALL", 0, 20)).thenReturn(retrievedBookings);
         String response = mockMvc.perform(get("/bookings?state=ALL")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(bookingService, atLeast(1)).getBookingsByBookerId(1L, "ALL");
+        verify(bookingService, atLeast(1)).getBookingsByBookerId(1L, "ALL", 0, 20);
         assertEquals(response, objectMapper.writeValueAsString(retrievedBookings));
     }
 
     @Test
     @SneakyThrows
     public void getBookingsByBookerId_whenInvokedWithInvalidId_thenExpectNotFound() {
-        when(bookingService.getBookingsByBookerId(1L, "ALL")).thenThrow(NotFoundException.class);
+        when(bookingService.getBookingsByBookerId(1L, "ALL", 0, 20)).thenThrow(NotFoundException.class);
         mockMvc.perform(get("/bookings?state=ALL")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(bookingService, atLeast(1)).getBookingsByBookerId(1L, "ALL");
+        verify(bookingService, atLeast(1)).getBookingsByBookerId(1L, "ALL", 0, 20);
     }
 
     @Test
@@ -161,27 +164,27 @@ public class BookingControllerTest {
     public void getBookingsByOwner_whenInvokedWithValidId_thenExpectOk() {
         List<BookingDto> retrievedBookings = List.of(BookingDto.builder().id(1L).status(Status.APPROVED)
                 .start(LocalDateTime.now().plusHours(1)).end(LocalDateTime.now().plusHours(2)).build());
-        when(bookingService.getBookingsByOwnerId(1L, "ALL")).thenReturn(retrievedBookings);
+        when(bookingService.getBookingsByOwnerId(1L, "ALL", 0, 20)).thenReturn(retrievedBookings);
         String response = mockMvc.perform(get("/bookings/owner?state=ALL")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(bookingService, atLeast(1)).getBookingsByOwnerId(1L, "ALL");
+        verify(bookingService, atLeast(1)).getBookingsByOwnerId(1L, "ALL", 0, 20);
         assertEquals(response, objectMapper.writeValueAsString(retrievedBookings));
     }
 
     @Test
     @SneakyThrows
     public void getBookingsByOwner_whenInvokedWithInvalidId_thenExpectNotFound() {
-        when(bookingService.getBookingsByOwnerId(1L, "ALL")).thenThrow(NotFoundException.class);
+        when(bookingService.getBookingsByOwnerId(1L, "ALL", 0, 20)).thenThrow(NotFoundException.class);
         mockMvc.perform(get("/bookings/owner?state=ALL")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        verify(bookingService, atLeast(1)).getBookingsByOwnerId(1L, "ALL");
+        verify(bookingService, atLeast(1)).getBookingsByOwnerId(1L, "ALL", 0, 20);
     }
 }

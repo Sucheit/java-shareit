@@ -1,12 +1,15 @@
 package ru.practicum.shareit.item;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import ru.practicum.shareit.item.model.ItemEntity;
+import org.springframework.data.domain.PageRequest;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.model.UserEntity;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,92 +19,92 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRepositoryTest {
 
-
+    final PageRequest pageRequest = PageRequest.of(0, 20);
     @Autowired
-    private ItemRepository itemRepository;
-
+    ItemRepository itemRepository;
     @Autowired
-    private TestEntityManager entityManager;
+    TestEntityManager entityManager;
 
     @Test
     public void givenNewItem_whenSave_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
-        entityManager.persist(userEntity);
-        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        ItemEntity insertedItemEntity = itemRepository.save(itemEntity);
-        assertThat(entityManager.find(ItemEntity.class, insertedItemEntity.getId())).isEqualTo(itemEntity);
+        User user = User.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(user);
+        Item item = Item.builder().name("name").description("desc")
+                .available(Boolean.TRUE).user(user).build();
+        Item insertedItem = itemRepository.save(item);
+        assertThat(entityManager.find(Item.class, insertedItem.getId())).isEqualTo(item);
     }
 
     @Test
     public void givenItemCreated_whenUpdate_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
-        entityManager.persist(userEntity);
-        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        entityManager.persist(itemEntity);
+        User user = User.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(user);
+        Item item = Item.builder().name("name").description("desc")
+                .available(Boolean.TRUE).user(user).build();
+        entityManager.persist(item);
         String newName = "NewName";
-        itemEntity.setName(newName);
-        itemRepository.save(itemEntity);
-        assertThat(entityManager.find(ItemEntity.class, itemEntity.getId()).getName()).isEqualTo(newName);
+        item.setName(newName);
+        itemRepository.save(item);
+        assertThat(entityManager.find(Item.class, item.getId()).getName()).isEqualTo(newName);
     }
 
     @Test
     public void givenItemCreated_whenFindById_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
-        entityManager.persist(userEntity);
-        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        entityManager.persist(itemEntity);
-        Optional<ItemEntity> retrievedItem = itemRepository.findById(itemEntity.getId());
-        assertThat(retrievedItem).contains(itemEntity);
+        User user = User.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(user);
+        Item item = Item.builder().name("name").description("desc")
+                .available(Boolean.TRUE).user(user).build();
+        entityManager.persist(item);
+        Optional<Item> retrievedItem = itemRepository.findById(item.getId());
+        assertThat(retrievedItem).contains(item);
     }
 
     @Test
     public void givenItemCreated_whenDelete_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
-        entityManager.persist(userEntity);
-        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        entityManager.persist(itemEntity);
-        itemRepository.delete(itemEntity);
-        assertThat(entityManager.find(ItemEntity.class, itemEntity.getId())).isNull();
+        User user = User.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(user);
+        Item item = Item.builder().name("name").description("desc")
+                .available(Boolean.TRUE).user(user).build();
+        entityManager.persist(item);
+        itemRepository.delete(item);
+        assertThat(entityManager.find(Item.class, item.getId())).isNull();
     }
 
     @Test
     public void givenUserAndItemCreated_whenFindByUserId_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
-        entityManager.persist(userEntity);
-        ItemEntity itemEntity = ItemEntity.builder().name("name").description("desc")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        entityManager.persist(itemEntity);
-        List<ItemEntity> items = itemRepository.findByUserEntityId(userEntity.getId());
+        User user = User.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(user);
+        Item item = Item.builder().name("name").description("desc")
+                .available(Boolean.TRUE).user(user).build();
+        entityManager.persist(item);
+        List<Item> items = itemRepository.findByUserIdOrderByIdAsc(user.getId(), pageRequest);
         assertNotNull(items);
         assertEquals(1, items.size());
-        assertEquals(itemEntity, items.get(0));
+        assertEquals(item, items.get(0));
     }
 
     @Test
     public void givenItems_whenFindByNameOrDesc_thenSuccess() {
-        UserEntity userEntity = UserEntity.builder().name("username").email("email@mail.com").build();
-        entityManager.persist(userEntity);
-        ItemEntity itemEntity1 = ItemEntity.builder().name("hammer").description("desc")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        ItemEntity itemEntity2 = ItemEntity.builder().name("name").description("welding")
-                .available(Boolean.TRUE).userEntity(userEntity).build();
-        entityManager.persist(itemEntity1);
-        entityManager.persist(itemEntity2);
-        List<ItemEntity> items1 = itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("hAmM", "hAmM");
+        User user = User.builder().name("username").email("email@mail.com").build();
+        entityManager.persist(user);
+        Item item1 = Item.builder().name("hammer").description("desc")
+                .available(Boolean.TRUE).user(user).build();
+        Item item2 = Item.builder().name("name").description("welding")
+                .available(Boolean.TRUE).user(user).build();
+        entityManager.persist(item1);
+        entityManager.persist(item2);
+        List<Item> items1 = itemRepository
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("hAmM", "hAmM", pageRequest);
         assertNotNull(items1);
         assertEquals(1, items1.size());
-        assertEquals(itemEntity1, items1.get(0));
-        List<ItemEntity> items2 = itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("WEld", "WEld");
+        assertEquals(item1, items1.get(0));
+        List<Item> items2 = itemRepository
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("WEld", "WEld", pageRequest);
         assertNotNull(items2);
         assertEquals(1, items2.size());
-        assertEquals(itemEntity2, items2.get(0));
+        assertEquals(item2, items2.get(0));
     }
 }

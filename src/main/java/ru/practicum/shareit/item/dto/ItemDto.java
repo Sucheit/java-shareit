@@ -1,9 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -13,34 +11,27 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemDto implements Comparable<ItemDto> {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ItemDto {
 
-    private Long id;
-
-    @NotNull
-    @NotBlank
-    private String name;
+    Long id;
 
     @NotNull
     @NotBlank
-    private String description;
+    String name;
 
     @NotNull
-    private Boolean available;
+    @NotBlank
+    String description;
 
-    private ItemBooking lastBooking;
+    @NotNull
+    Boolean available;
 
-    private ItemBooking nextBooking;
+    ItemBooking lastBooking;
 
-    private Set<CommentDto> comments;
+    ItemBooking nextBooking;
 
-    @Override
-    public int compareTo(ItemDto o) {
-        if (this.getId() > o.getId()) {
-            return 1;
-        } else if (this.getId() < o.getId()) {
-            return -1;
-        }
-        return 0;
-    }
+    Set<CommentDto> comments;
+
+    Long requestId;
 }

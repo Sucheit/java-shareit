@@ -1,37 +1,51 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.practicum.shareit.booking.model.BookingEntity;
+import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
+@Repository
+public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<BookingEntity> findByUserEntityId(Long bookerId);
+    List<Booking> findByUserIdOrderByStartTimeDesc(Long bookerId, PageRequest pageRequest);
 
-    List<BookingEntity> findByUserEntityIdAndStatusEquals(Long bookerId, Status status);
+    List<Booking> findByUserIdAndStatusEqualsOrderByStartTimeDesc(
+            Long bookerId, Status status, PageRequest pageRequest);
 
-    List<BookingEntity> findByUserEntityIdAndEndTimeBefore(Long bookerId, LocalDateTime endTime);
+    List<Booking> findByUserIdAndEndTimeBeforeOrderByStartTimeDesc(
+            Long bookerId, LocalDateTime endTime, PageRequest pageRequest);
 
-    List<BookingEntity> findByUserEntityIdAndStartTimeBeforeAndEndTimeAfter(
-            Long bookerId, LocalDateTime starTime, LocalDateTime endTime);
+    List<Booking> findByUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(
+            Long bookerId, LocalDateTime starTime, LocalDateTime endTime, PageRequest pageRequest);
 
-    List<BookingEntity> findByUserEntityIdAndStartTimeAfter(Long bookerId, LocalDateTime starTime);
+    List<Booking> findByUserIdAndStartTimeAfterOrderByStartTimeDesc(
+            Long bookerId, LocalDateTime starTime, PageRequest pageRequest);
 
-    List<BookingEntity> findByItemEntityUserEntityId(Long ownerId);
+    List<Booking> findByItemUserIdOrderByStartTimeDesc(Long ownerId, PageRequest pageRequest);
 
-    List<BookingEntity> findByItemEntityUserEntityIdAndStatusEquals(Long ownerId, Status status);
+    List<Booking> findByItemUserIdAndStatusEqualsOrderByStartTimeDesc(Long ownerId, Status status, PageRequest pageRequest);
 
-    List<BookingEntity> findByItemEntityUserEntityIdAndEndTimeBefore(Long ownerId, LocalDateTime endTime);
+    List<Booking> findByItemUserIdAndEndTimeBeforeOrderByStartTimeDesc(Long ownerId, LocalDateTime endTime, PageRequest pageRequest);
 
-    List<BookingEntity> findByItemEntityUserEntityIdAndStartTimeBeforeAndEndTimeAfter(
-            Long ownerId, LocalDateTime starTime, LocalDateTime endTime);
+    List<Booking> findByItemUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(
+            Long ownerId, LocalDateTime starTime, LocalDateTime endTime, PageRequest pageRequest);
 
-    List<BookingEntity> findByItemEntityUserEntityIdAndStartTimeAfter(Long ownerId, LocalDateTime startTime);
+    List<Booking> findByItemUserIdAndStartTimeAfterOrderByStartTimeDesc(
+            Long ownerId, LocalDateTime startTime, PageRequest pageRequest);
 
-    List<BookingEntity> findByItemEntityId(Long itemId);
+    List<Booking> findByItemIdOrderByStartTimeDesc(Long itemId);
 
-    List<BookingEntity> findByItemEntityIdAndUserEntityId(Long itemId, Long bookerId);
+    List<Booking> findByItemIdAndUserIdOrderByStartTimeDesc(Long itemId, Long bookerId);
+
+    Optional<Booking> findFirstByItemIdAndAndStartTimeBeforeAndStatusEqualsOrderByStartTimeDesc(
+            Long itemId, LocalDateTime startTime, Status status);
+
+    Optional<Booking> findFirstByItemIdAndAndStartTimeAfterAndStatusEqualsOrderByStartTimeAsc(
+            Long itemId, LocalDateTime startTime, Status status);
 }
